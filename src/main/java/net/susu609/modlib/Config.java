@@ -37,10 +37,6 @@ public final class Config {
             BUILDER.comment("A magic number")
                     .defineInRange("magicNumber", 42, 0, Integer.MAX_VALUE);
 
-    /*
-     * Build the spec only after every value has been defined.
-     */
-    static final ForgeConfigSpec SPEC = BUILDER.build();
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>>
             ITEM_STRINGS =
             BUILDER.comment("A list of items to log on common setup.")
@@ -48,6 +44,11 @@ public final class Config {
                             "items",
                             List.of("minecraft:iron_ingot"),
                             Config::validateItemName);
+
+    /*
+     * Build the spec only after every value has been defined.
+     */
+    static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean logDirtBlock;
     public static int magicNumber;
@@ -61,6 +62,7 @@ public final class Config {
         if (!(obj instanceof String itemName)) {
             return false;
         }
+
         ResourceLocation itemId = RL.parse(itemName);
         return itemId != null && ForgeRegistries.ITEMS.containsKey(itemId);
     }
