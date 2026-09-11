@@ -1,21 +1,9 @@
-buildscript {
-    repositories {
-        // Required by MixinGradle.
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
-    }
-}
-
 plugins {
     id 'eclipse'
     id 'idea'
+    id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 }
-
-apply plugin: 'org.spongepowered.mixin'
 
 group = mod_group_id
 version = mod_version
@@ -30,11 +18,9 @@ java {
 
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
-
-    // Keep generated resources in sync when launching from IntelliJ IDEA.
     copyIdeResources = true
 
-    // Template keeps two isolated clients ready for LAN/co-op testing.
+    // Keep the same two-client workflow so shared code can also be tested in LAN/co-op.
     runs {
         configureEach {
             property 'forge.logging.markers', 'REGISTRIES'
@@ -60,21 +46,12 @@ minecraft {
     }
 }
 
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
-}
-
 repositories {
     mavenCentral()
-    maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-
-    // Mixin support is available to every project created from this template.
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -118,14 +95,14 @@ tasks.named('jar', Jar).configure {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
+
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
-            artifact jar
+            groupId = project.group.toString()
+            artifactId = mod_id
+            version = project.version.toString()
+            artifact tasks.named('jar')
         }
-    }
-
-    repositories {
-        mavenLocal()
     }
 }

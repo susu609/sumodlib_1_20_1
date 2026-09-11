@@ -15,6 +15,7 @@ public final class RL {
     public static ResourceLocation of(String namespace, String path) {
         return require(namespace + ":" + path);
     }
+
     /**
      * Parses an internal id that is expected to be valid.
      */
@@ -26,9 +27,11 @@ public final class RL {
         }
         return result;
     }
+
     public static ResourceLocation mc(String path) {
         return require("minecraft:" + path);
     }
+
     /**
      * Parses external/config input. Invalid input returns null.
      */
