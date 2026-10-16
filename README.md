@@ -1,5 +1,7 @@
 # Su Mod Lib — Minecraft Forge 1.20.1
 
+[![](https://jitpack.io/v/susu609/sumodlib_1_20_1.svg)](https://jitpack.io/#susu609/sumodlib_1_20_1)
+
 Shared utilities for Su's Forge mods (`net.susu609.modlib`).
 
 - Minecraft Java 1.20.1, Forge 47.4.23, Mojang official mappings, Java 17
