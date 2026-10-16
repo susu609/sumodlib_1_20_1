@@ -96,6 +96,12 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+// reobfJar rewrites the jar in place to the names fg.deobf expects. Make
+// sure it has finished before any publish task uploads that jar.
+tasks.withType(AbstractPublishToMaven).configureEach {
+    dependsOn 'reobfJar'
+}
+
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
