@@ -1,0 +1,146 @@
+// Publishing for sumodlib: Maven Local for development, and a bundle for the
+// Maven Central Portal (see PUBLISHING.md).
+//
+//   gradle publishToMavenLocal   install into ~/.m2 for the other mods
+//   gradle centralBundle         build build/central-bundle/<name>.zip
+//
+// Maven Local (and JitPack) keep the project group, mod_group_id. Only the
+// Central bundle uses maven_group_id, the namespace verified on Central.
+
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+// Sources and Javadoc jars are required by Central only; keep them out of
+// everyday publishing so a Javadoc problem can never block a local publish.
+boolean forCentral = gradle.startParameter.taskNames.any {
+    it == 'centralBundle' || it.endsWith(':centralBundle')
+}
+
+tasks.register('sourcesJar', Jar) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+tasks.named('javadoc') {
+    failOnError = false
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+tasks.register('javadocJar', Jar) {
+    archiveClassifier = 'javadoc'
+    from tasks.named('javadoc')
+}
+
+def stagingDir = layout.buildDirectory.dir('central-staging')
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            groupId = forCentral ?
+                    (findProperty('maven_group_id') ?: project.group.toString()) :
+                    project.group.toString()
+            artifactId = mod_id
+            version = project.version.toString()
+
+            // The jar must be the reobfuscated one, which is what fg.deobf in
+            // the consuming mods expects.
+            artifact tasks.named('jar')
+            if (forCentral) {
+                artifact tasks.named('sourcesJar')
+                artifact tasks.named('javadocJar')
+            }
+
+            pom {
+                name = findProperty('pom_name') ?: mod_name
+                description = findProperty('pom_description') ?: mod_description
+                url = findProperty('pom_url')
+                if (findProperty('pom_license_name')) {
+                    licenses {
+                        license {
+                            name = findProperty('pom_license_name')
+                            url = findProperty('pom_license_url')
+                        }
+                    }
+                }
+                developers {
+                    developer {
+                        id = findProperty('pom_developer_id')
+                        name = findProperty('pom_developer_name')
+                    }
+                }
+                scm {
+                    connection = findProperty('pom_scm_connection')
+                    developerConnection = findProperty('pom_scm_developer_connection')
+                    url = findProperty('pom_url')
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'centralStaging'
+            url = stagingDir
+        }
+    }
+}
+
+// Sign when a key is configured; centralBundle insists on one (below).
+//   signingKey / signingPassword        ASCII-armored secret key (CI-friendly)
+//   signing.gnupg.keyName (+ passphrase) use the local gpg instead
+signing {
+    required = false
+    def signingKey = findProperty('signingKey')
+    if (signingKey) {
+        useInMemoryPgpKeys(signingKey, findProperty('signingPassword') ?: '')
+    } else if (findProperty('signing.gnupg.keyName')) {
+        useGpgCmd()
+    }
+    sign publishing.publications.mavenJava
+}
+
+// ForgeGradle rewrites the jar in place (reobfJar); publish and sign only
+// after that has happened, for Maven Local, JitPack and Central alike.
+tasks.withType(AbstractPublishToMaven).configureEach {
+    dependsOn tasks.named('reobfJar')
+}
+tasks.withType(Sign).configureEach {
+    dependsOn tasks.named('reobfJar')
+}
+
+tasks.named('publishMavenJavaPublicationToCentralStagingRepository') {
+    doFirst {
+        delete stagingDir
+    }
+}
+
+def centralBundle = tasks.register('centralBundle', Zip) {
+    group = 'publishing'
+    description = 'Builds the signed zip to upload on the Maven Central Portal.'
+    dependsOn tasks.named('publishMavenJavaPublicationToCentralStagingRepository')
+    from(stagingDir) {
+        exclude '**/maven-metadata*'
+    }
+    archiveFileName = "${mod_id}-${project.version}-central-bundle.zip"
+    destinationDirectory = layout.buildDirectory.dir('central-bundle')
+}
+
+// Fail before doing any work when Central's requirements are not met.
+gradle.taskGraph.whenReady { graph ->
+    if (!graph.hasTask(centralBundle.get()))
+        return
+    def missing = []
+    ['maven_group_id', 'pom_url', 'pom_license_name', 'pom_license_url',
+     'pom_developer_id', 'pom_developer_name', 'pom_scm_connection',
+     'pom_scm_developer_connection'].each {
+        if (!findProperty(it))
+            missing << it
+    }
+    if (!findProperty('signingKey') && !findProperty('signing.gnupg.keyName'))
+        missing << 'signingKey (or signing.gnupg.keyName)'
+    if (!missing.isEmpty()) {
+        throw new GradleException(
+                'centralBundle needs these Gradle properties (gradle.properties ' +
+                        'or ~/.gradle/gradle.properties): ' +
+                        missing.join(', ') + '. See PUBLISHING.md.')
+    }
+}

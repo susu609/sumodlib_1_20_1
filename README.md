@@ -43,3 +43,11 @@ JitPack runs the command in `jitpack.yml`
 `./gradlew publishToMavenLocal` installs
 `net.susu609.modlib:sumodlib:<version>` into `~/.m2`. A consuming mod can use
 that copy by setting `sumodlib_source=local` in its `gradle.properties`.
+
+## Maven Central
+
+The build can also produce a signed bundle for Maven Central
+(`./gradlew centralBundle`, coordinates `io.github.susu609:sumodlib:<version>`).
+It has not been released there yet; the steps and what is still needed
+(a license choice, a PGP key) are in [PUBLISHING.md](PUBLISHING.md).
+
