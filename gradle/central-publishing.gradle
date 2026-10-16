@@ -100,11 +100,14 @@ signing {
 
 // ForgeGradle rewrites the jar in place (reobfJar); publish and sign only
 // after that has happened, for Maven Local, JitPack and Central alike.
+// ForgeGradle registers reobfJar after this script has been evaluated, and the
+// signing block above creates its Sign task right away, so depend on the task
+// by name (resolved later) instead of looking it up with tasks.named.
 tasks.withType(AbstractPublishToMaven).configureEach {
-    dependsOn tasks.named('reobfJar')
+    dependsOn 'reobfJar'
 }
 tasks.withType(Sign).configureEach {
-    dependsOn tasks.named('reobfJar')
+    dependsOn 'reobfJar'
 }
 
 tasks.named('publishMavenJavaPublicationToCentralStagingRepository') {

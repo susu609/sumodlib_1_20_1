@@ -63,11 +63,15 @@ packages (`net.susu609.modlib...`) do not change.
 
 ## What has and has not been tested
 
-`gradle/central-publishing.gradle` was run in a stand-in Gradle project (8.14,
-offline, with a throwaway PGP key and a fake `reobfJar`): the bundle layout, the
-four checksums per file, valid signatures, a complete POM without
-dependencies, the fail-fast check for missing properties and an unchanged
-`publishToMavenLocal` all behaved as described. It has **not** been run with
-ForgeGradle, so the first real run may need small adjustments (for example if
-Javadoc generation behaves differently against the Minecraft classpath, which
-is set not to fail the build).
+`gradle/central-publishing.gradle` was run in a stand-in Gradle project on
+Gradle 8.8 (the wrapper version, as on JitPack) with a fake `reobfJar` that is
+registered only after the build script has been evaluated, like ForgeGradle
+does. This reproduced the first JitPack failure (`Task with name 'reobfJar' not
+found`, caused by looking the task up by name while the script was still being
+evaluated) and checked the fix: `publishToMavenLocal -x test` now runs `jar`,
+then `reobfJar`, then publishes, and `centralBundle` stops early and lists the
+missing properties.
+
+The stand-in is not ForgeGradle, so the following have **not** been tested:
+the real `reobfJar` output, Javadoc generation against the Minecraft
+classpath (set not to fail the build) and a real Central upload.
