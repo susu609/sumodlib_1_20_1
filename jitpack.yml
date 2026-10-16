@@ -1,0 +1,6 @@
+# JitPack builds this repo on demand for every git tag / branch that a
+# consumer requests: com.github.susu609:sumodlib_1_20_1:<tag or branch-SNAPSHOT>
+jdk:
+  - openjdk17
+install:
+  - ./gradlew publishToMavenLocal -x test --no-daemon

@@ -96,13 +96,7 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-publishing {
-    publications {
-        register('mavenJava', MavenPublication) {
-            groupId = project.group.toString()
-            artifactId = mod_id
-            version = project.version.toString()
-            artifact tasks.named('jar')
-        }
-    }
-}
+// Maven Local / Maven Central publishing (see PUBLISHING.md). The script also
+// makes every publish task wait for reobfJar, which rewrites the jar in place
+// to the names fg.deobf expects.
+apply from: 'gradle/central-publishing.gradle'
