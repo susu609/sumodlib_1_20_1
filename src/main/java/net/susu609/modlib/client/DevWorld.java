@@ -19,8 +19,9 @@ import net.susu609.modlib.world.VoidWorlds;
 /**
  * Development shortcut: when the JVM property {@code sumodlib.devWorld} names
  * a world, the client skips the title screen and opens that world, creating
- * it as a Void world (creative, peaceful, cheats on, quiet rules) the first
- * time. Set it on a ForgeGradle run:
+ * it as a Void world (creative, normal difficulty, cheats on, quiet rules)
+ * the first time. Not peaceful: peaceful removes every hostile mob, which
+ * breaks mods that spawn their own. Set it on a ForgeGradle run:
  * {@code property 'sumodlib.devWorld', 'Dev Void'}. It only fires once per
  * launch, so quitting to the title screen stays there.
  */
@@ -56,7 +57,7 @@ public final class DevWorld {
         GameRules rules = new GameRules();
         VoidWorlds.applyQuietRules(rules, null);
         LevelSettings settings = new LevelSettings(name, GameType.CREATIVE,
-                false, Difficulty.PEACEFUL, true, rules,
+                false, Difficulty.NORMAL, true, rules,
                 WorldDataConfiguration.DEFAULT);
         WorldOptions options = new WorldOptions(WorldOptions.randomSeed(),
                 false, false);

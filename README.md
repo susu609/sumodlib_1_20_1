@@ -65,7 +65,8 @@ block)`.
 
 **Straight into a test world.** With the JVM property `sumodlib.devWorld`
 the client skips the title screen and opens that world, creating it as a
-Void world (creative, peaceful, cheats on) the first time:
+Void world (creative, normal difficulty, cheats on) the first time (not
+peaceful, which would delete every hostile mob a mod spawns):
 
 ```groovy
 minecraft.runs.client { property 'sumodlib.devWorld', 'Dev Void' }
