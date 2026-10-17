@@ -35,12 +35,15 @@ minecraft {
 
         client {
             workingDirectory project.file('run-client1')
+            property 'sumodlib.devWorld', 'Dev Void'
             args '--username', 'Dev1'
         }
 
         client2 {
             parent minecraft.runs.client
             workingDirectory project.file('run-client2')
+            // The second client joins over LAN instead of opening a world.
+            property 'sumodlib.devWorld', ''
             args '--username', 'Dev2'
         }
     }

@@ -27,6 +27,53 @@ dependencies {
 The version is a git tag of this repository (or `<branch>-SNAPSHOT`, for
 example `master-SNAPSHOT`, to try unreleased changes).
 
+## Void worlds
+
+`net.susu609.modlib.world.VoidWorlds` and a few data files give empty worlds
+that load in a moment instead of generating vanilla terrain.
+
+**World type "Void".** On the Create World screen, *World Type: Void*; on a
+dedicated server, `level-type=sumodlib:void` in `server.properties`. The
+overworld is empty (biome The Void, no structures) except a 5x5 stone
+platform at (0, 64, 0) where players spawn. When such a world is created,
+the game rules are set to fixed noon, no weather and no natural mob
+spawning. The Nether and the End are vanilla.
+
+**Void dimension for a mod.** Add `data/<modid>/dimension/<name>.json`:
+
+```json
+{
+  "type": "sumodlib:void",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "minecraft:the_void",
+      "layers": [{ "block": "minecraft:air", "height": 1 }],
+      "lakes": false,
+      "features": false,
+      "structure_overrides": []
+    }
+  }
+}
+```
+
+`sumodlib:void` is a dimension type with fixed noon, no beds, Y 0..255. In
+code: `VoidWorlds.level(server, VoidWorlds.dimension("<modid>", "<name>"))`
+(falls back to the overworld if the dimension is missing),
+`VoidWorlds.isVoid(level)`, `VoidWorlds.ensurePlatform(level, pos, radius,
+block)`.
+
+**Straight into a test world.** With the JVM property `sumodlib.devWorld`
+the client skips the title screen and opens that world, creating it as a
+Void world (creative, peaceful, cheats on) the first time:
+
+```groovy
+minecraft.runs.client { property 'sumodlib.devWorld', 'Dev Void' }
+```
+
+Quitting to the title screen stays there; the shortcut fires once per
+launch. Delete the world folder in `run-client1/saves/` to start fresh.
+
 ## Releasing a version
 
 1. Merge the changes into `master` and bump `mod_version` in
