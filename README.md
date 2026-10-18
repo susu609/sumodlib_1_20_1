@@ -75,6 +75,22 @@ minecraft.runs.client { property 'sumodlib.devWorld', 'Dev Void' }
 Quitting to the title screen stays there; the shortcut fires once per
 launch. Delete the world folder in `run-client1/saves/` to start fresh.
 
+## Vanilla tutorial switch
+
+`net.susu609.modlib.client.Tutorials` turns the vanilla tutorial (the movement,
+inventory and crafting toasts) off when you need it gone. It is off by default.
+Turn it on in `sumodlib-client.toml` (`disableVanillaTutorial = true`), or with
+the JVM property `sumodlib.noTutorial=true`:
+
+```groovy
+minecraft.runs.client { property 'sumodlib.noTutorial', 'true' }
+```
+
+The tutorial is switched off every time the player joins a world. A mod can
+also call `Tutorials.disable()`. Like the options screen, this stores
+`tutorialStep:none` in `options.txt`, so the tutorial stays off after the
+switch is turned off again.
+
 ## Releasing a version
 
 1. Merge the changes into `master` and bump `mod_version` in
