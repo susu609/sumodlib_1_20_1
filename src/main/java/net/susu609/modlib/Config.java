@@ -68,6 +68,11 @@ public final class Config {
     }
 
     @SubscribeEvent static void onLoad(final ModConfigEvent event) {
+        // The event fires for every config of the mod, the client one
+        // included; this spec's values only exist once its own file loads.
+        if (event.getConfig().getSpec() != SPEC) {
+            return;
+        }
         logDirtBlock = LOG_DIRT_BLOCK.get();
         magicNumber = MAGIC_NUMBER.get();
         magicNumberIntroduction = MAGIC_NUMBER_INTRODUCTION.get();
